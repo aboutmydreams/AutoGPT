@@ -84,26 +84,25 @@ def run_benchmark(
         ] = "True"  # ugly hack to make the mock work when calling from API
 
     # Pass through flags
-    for flag, active in {
-        "--maintain": maintain,
-        "--improve": improve,
-        "--explore": explore,
-        "--no-dep": no_dep,
-        "--mock": mock,
-        "--nc": no_cutoff,
-        "--keep-answers": keep_answers,
-    }.items():
-        if active:
-            pytest_args.append(flag)
-
+    pytest_args.extend(
+        flag
+        for flag, active in {
+            "--maintain": maintain,
+            "--improve": improve,
+            "--explore": explore,
+            "--no-dep": no_dep,
+            "--mock": mock,
+            "--nc": no_cutoff,
+            "--keep-answers": keep_answers,
+        }.items()
+        if active
+    )
     if cutoff:
         pytest_args.append(f"--cutoff={cutoff}")
         logger.debug(f"Setting cuttoff override to {cutoff} seconds.")
 
     current_dir = Path(__file__).resolve().parent
-    pytest_args.append(str(current_dir / "generate_test.py"))
-
-    pytest_args.append("--cache-clear")
+    pytest_args.extend((str(current_dir / "generate_test.py"), "--cache-clear"))
     exit_code = pytest.main(pytest_args)
 
     SingletonReportManager.clear_instance()
@@ -126,8 +125,7 @@ def validate_args(
 ) -> None:
     if categories:
         all_categories = get_unique_categories()
-        invalid_categories = set(categories) - all_categories
-        if invalid_categories:
+        if invalid_categories := set(categories) - all_categories:
             raise InvalidInvocationError(
                 "One or more invalid categories were specified: "
                 f"{', '.join(invalid_categories)}.\n"

@@ -217,7 +217,6 @@ def _recurse_user_config_fields(
         if "user_configurable" in field.field_info.extra:
             user_config_fields[name] = infer_field_value(field, value)
 
-        # Recurse into nested config object
         elif isinstance(value, SystemConfiguration):
             user_config_fields[name] = _recurse_user_config_fields(
                 model=value,
@@ -225,14 +224,12 @@ def _recurse_user_config_fields(
                 init_sub_config=init_sub_config,
             )
 
-        # Recurse into optional nested config object
         elif value is None and init_sub_config:
             field_type = get_args(field.annotation)[0]  # Optional[T] -> T
             if type(field_type) is ModelMetaclass and issubclass(
                 field_type, SystemConfiguration
             ):
-                sub_config = init_sub_config(field_type)
-                if sub_config:
+                if sub_config := init_sub_config(field_type):
                     user_config_fields[name] = _recurse_user_config_fields(
                         model=sub_config,
                         infer_field_value=infer_field_value,

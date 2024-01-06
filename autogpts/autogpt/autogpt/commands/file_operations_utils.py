@@ -34,57 +34,49 @@ class TXTParser(ParserStrategy):
 class PDFParser(ParserStrategy):
     def read(self, file: BinaryIO) -> str:
         parser = pypdf.PdfReader(file)
-        text = ""
-        for page_idx in range(len(parser.pages)):
-            text += parser.pages[page_idx].extract_text()
-        return text
+        return "".join(
+            parser.pages[page_idx].extract_text()
+            for page_idx in range(len(parser.pages))
+        )
 
 
 # Reading text from binary file using docs parser
 class DOCXParser(ParserStrategy):
     def read(self, file: BinaryIO) -> str:
         doc_file = docx.Document(file)
-        text = ""
-        for para in doc_file.paragraphs:
-            text += para.text
-        return text
+        return "".join(para.text for para in doc_file.paragraphs)
 
 
 # Reading as dictionary and returning string format
 class JSONParser(ParserStrategy):
     def read(self, file: BinaryIO) -> str:
         data = json.load(file)
-        text = str(data)
-        return text
+        return str(data)
 
 
 class XMLParser(ParserStrategy):
     def read(self, file: BinaryIO) -> str:
         soup = BeautifulSoup(file, "xml")
-        text = soup.get_text()
-        return text
+        return soup.get_text()
 
 
 # Reading as dictionary and returning string format
 class YAMLParser(ParserStrategy):
     def read(self, file: BinaryIO) -> str:
         data = yaml.load(file, Loader=yaml.FullLoader)
-        text = str(data)
-        return text
+        return str(data)
 
 
 class HTMLParser(ParserStrategy):
     def read(self, file: BinaryIO) -> str:
         soup = BeautifulSoup(file, "html.parser")
-        text = soup.get_text()
-        return text
+        return soup.get_text()
 
 
 class LaTeXParser(ParserStrategy):
     def read(self, file: BinaryIO) -> str:
         latex = file.read().decode()
-        text = LatexNodes2Text().latex_to_text(latex)
-        return text
+        return LatexNodes2Text().latex_to_text(latex)
 
 
 class FileContext:
@@ -132,9 +124,7 @@ def is_file_binary_fn(file: BinaryIO):
     """
     file_data = file.read()
     file.seek(0)
-    if b"\x00" in file_data:
-        return True
-    return False
+    return b"\x00" in file_data
 
 
 def decode_textual_file(file: BinaryIO, ext: str, logger: logging.Logger) -> str:

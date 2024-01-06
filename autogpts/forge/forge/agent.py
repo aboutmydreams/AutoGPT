@@ -138,10 +138,14 @@ class ForgeAgent(Agent):
         step.output = "Washington D.C"
 
         LOG.info(
-            f"\t✅ Final Step completed: {step.step_id}. \n"
-            + f"Output should be placeholder text Washington D.C. You'll need to \n"
-            + f"modify execute_step to include LLM behavior. Follow the tutorial "
-            + f"if confused. "
+            (
+                (
+                    f"\t✅ Final Step completed: {step.step_id}. \n"
+                    + f"Output should be placeholder text Washington D.C. You'll need to \n"
+                    + "modify execute_step to include LLM behavior. Follow the tutorial "
+                )
+                + "if confused. "
+            )
         )
 
         return step

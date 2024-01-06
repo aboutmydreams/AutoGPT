@@ -13,9 +13,7 @@ def get_list_of_file_paths(
     challenge_dir_path: str | Path, artifact_folder_name: str
 ) -> list[Path]:
     source_dir = Path(challenge_dir_path) / artifact_folder_name
-    if not source_dir.exists():
-        return []
-    return list(source_dir.iterdir())
+    return [] if not source_dir.exists() else list(source_dir.iterdir())
 
 
 def copy_artifacts_into_temp_folder(

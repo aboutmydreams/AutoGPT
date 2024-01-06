@@ -158,10 +158,7 @@ for base, copies in chat_model_mapping.items():
             copy_info.has_function_call_api = False
 
 
-OPEN_AI_MODELS = {
-    **OPEN_AI_CHAT_MODELS,
-    **OPEN_AI_EMBEDDING_MODELS,
-}
+OPEN_AI_MODELS = OPEN_AI_CHAT_MODELS | OPEN_AI_EMBEDDING_MODELS
 
 
 class OpenAIConfiguration(ModelProviderConfiguration):
@@ -738,12 +735,13 @@ def _tool_calls_compat_extract_calls(response: str) -> list[AssistantToolCallDic
 
     if response[0] == "[":
         tool_calls: list[AssistantToolCallDict] = json.loads(response)
-    else:
-        block = re.search(r"```(?:tool_calls)?\n(.*)\n```\s*$", response, re.DOTALL)
-        if not block:
-            raise ValueError("Could not find tool calls block in response")
+    elif block := re.search(
+        r"```(?:tool_calls)?\n(.*)\n```\s*$", response, re.DOTALL
+    ):
         tool_calls: list[AssistantToolCallDict] = json.loads(block.group(1))
 
+    else:
+        raise ValueError("Could not find tool calls block in response")
     for t in tool_calls:
         t["function"]["arguments"] = str(t["function"]["arguments"])  # HACK
 

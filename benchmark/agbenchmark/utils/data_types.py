@@ -60,9 +60,8 @@ class Eval(BaseModel):
         if "type" in values and values["type"] == "llm":
             if v is None:
                 raise ValueError(f"{field.name} must be provided when type is 'llm'")
-        else:
-            if v is not None:
-                raise ValueError(f"{field.name} should only exist when type is 'llm'")
+        elif v is not None:
+            raise ValueError(f"{field.name} should only exist when type is 'llm'")
         return v
 
     @validator("scoring")

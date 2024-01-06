@@ -17,7 +17,7 @@ class AutoGptFormatter(FancyConsoleFormatter):
         # Make sure `msg` is a string
         if not hasattr(record, "msg"):
             record.msg = ""
-        elif not type(record.msg) is str:
+        elif type(record.msg) is not str:
             record.msg = str(record.msg)
 
         # Strip color from the message to prevent color spoofing
