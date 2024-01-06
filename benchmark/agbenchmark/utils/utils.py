@@ -81,23 +81,22 @@ def get_highest_success_difficulty(
                         f"in test '{test_name}'"
                     )
                     continue
-            else:
-                if test_data["metrics"]["success"]:
-                    difficulty_str = test_data["metrics"]["difficulty"]
+            elif test_data["metrics"]["success"]:
+                difficulty_str = test_data["metrics"]["difficulty"]
 
-                    try:
-                        difficulty_enum = DifficultyLevel[difficulty_str.lower()]
-                        difficulty_level = DIFFICULTY_MAP[difficulty_enum]
+                try:
+                    difficulty_enum = DifficultyLevel[difficulty_str.lower()]
+                    difficulty_level = DIFFICULTY_MAP[difficulty_enum]
 
-                        if difficulty_level > highest_difficulty_level:
-                            highest_difficulty = difficulty_enum
-                            highest_difficulty_level = difficulty_level
-                    except KeyError:
-                        logger.warning(
-                            f"Unexpected difficulty level '{difficulty_str}' "
-                            f"in test '{test_name}'"
-                        )
-                        continue
+                    if difficulty_level > highest_difficulty_level:
+                        highest_difficulty = difficulty_enum
+                        highest_difficulty_level = difficulty_level
+                except KeyError:
+                    logger.warning(
+                        f"Unexpected difficulty level '{difficulty_str}' "
+                        f"in test '{test_name}'"
+                    )
+                    continue
         except Exception as e:
             logger.warning(
                 "An unexpected error [1] occurred while analyzing report [2]."
@@ -151,6 +150,4 @@ def deep_sort(obj):
     """
     if isinstance(obj, dict):
         return {k: deep_sort(v) for k, v in sorted(obj.items())}
-    if isinstance(obj, list):
-        return [deep_sort(elem) for elem in obj]
-    return obj
+    return [deep_sort(elem) for elem in obj] if isinstance(obj, list) else obj

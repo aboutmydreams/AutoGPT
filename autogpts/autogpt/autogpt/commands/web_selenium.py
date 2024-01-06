@@ -131,8 +131,7 @@ async def read_webpage(url: str, agent: Agent, question: str = "") -> str:
         msg = e.msg.split("\n")[0]
         if "net::" in msg:
             raise BrowsingError(
-                "A networking error occurred while trying to load the page: %s"
-                % re.sub(r"^unknown error: ", "", msg)
+                f'A networking error occurred while trying to load the page: {re.sub("^unknown error: ", "", msg)}'
             )
         raise CommandExecutionError(msg)
     finally:
@@ -223,7 +222,7 @@ def open_page_in_browser(url: str, config: Config) -> WebDriver:
         # See https://developer.apple.com/documentation/webkit/testing_with_webdriver_in_safari  # noqa: E501
         driver = SafariDriver(options=options)
     else:
-        if platform == "linux" or platform == "linux2":
+        if platform in ["linux", "linux2"]:
             options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--remote-debugging-port=9222")
 

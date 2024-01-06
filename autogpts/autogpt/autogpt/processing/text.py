@@ -85,10 +85,7 @@ async def summarize_text(
     model = config.fast_llm
 
     if question:
-        instruction = (
-            'Include any information that can be used to answer the question: "%s". '
-            "Do not directly answer the question itself."
-        ) % question
+        instruction = f'Include any information that can be used to answer the question: "{question}". Do not directly answer the question itself.'
 
     summarization_prompt = ChatPrompt(messages=[])
 
@@ -124,7 +121,6 @@ async def summarize_text(
         logger.debug(f"\n{'-'*16} SUMMARY {'-'*17}\n{summary}\n{'-'*42}\n")
         return summary.strip(), None
 
-    summaries: list[str] = []
     chunks = list(
         split_text(
             text,
@@ -134,6 +130,7 @@ async def summarize_text(
         )
     )
 
+    summaries: list[str] = []
     for i, (chunk, chunk_length) in enumerate(chunks):
         logger.info(
             f"Summarizing chunk {i + 1} / {len(chunks)} of length {chunk_length} tokens"

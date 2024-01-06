@@ -26,8 +26,7 @@ def gcs_workspace_uninitialized(gcs_bucket_name: str) -> GCSFileWorkspace:
     os.environ["WORKSPACE_STORAGE_BUCKET"] = gcs_bucket_name
     ws_config = GCSFileWorkspaceConfiguration.from_env()
     ws_config.root = Path("/workspaces/AutoGPT-some-unique-task-id")
-    workspace = GCSFileWorkspace(ws_config)
-    yield workspace  # type: ignore
+    yield GCSFileWorkspace(ws_config)
     del os.environ["WORKSPACE_STORAGE_BUCKET"]
 
 
@@ -97,18 +96,18 @@ def test_list_files(gcs_workspace_with_files: GCSFileWorkspace):
     # List at root level
     assert (files := gcs_workspace_with_files.list()) == gcs_workspace_with_files.list()
     assert len(files) > 0
-    assert set(files) == set(Path(file_name) for file_name, _ in TEST_FILES)
+    assert set(files) == {Path(file_name) for file_name, _ in TEST_FILES}
 
     # List at nested path
     assert (
         nested_files := gcs_workspace_with_files.list(NESTED_DIR)
     ) == gcs_workspace_with_files.list(NESTED_DIR)
     assert len(nested_files) > 0
-    assert set(nested_files) == set(
+    assert set(nested_files) == {
         p.relative_to(NESTED_DIR)
         for file_name, _ in TEST_FILES
         if (p := Path(file_name)).is_relative_to(NESTED_DIR)
-    )
+    }
 
 
 @pytest.mark.asyncio

@@ -139,15 +139,14 @@ class SimpleAgent(Agent, Configurable):
         logger: logging.Logger,
     ) -> "SimpleAgent":
         agent_settings = SimpleWorkspace.load_agent_settings(workspace_path)
-        agent_args = {}
+        agent_args = {
+            "settings": agent_settings.agent,
+            "logger": logger,
+            "workspace": cls._get_system_instance(
+                "workspace", agent_settings, logger
+            ),
+        }
 
-        agent_args["settings"] = agent_settings.agent
-        agent_args["logger"] = logger
-        agent_args["workspace"] = cls._get_system_instance(
-            "workspace",
-            agent_settings,
-            logger,
-        )
         agent_args["openai_provider"] = cls._get_system_instance(
             "openai_provider",
             agent_settings,
@@ -212,35 +211,32 @@ class SimpleAgent(Agent, Configurable):
         return self._current_task, self._next_ability
 
     async def execute_next_ability(self, user_input: str, *args, **kwargs):
-        if user_input == "y":
-            ability = self._ability_registry.get_ability(
-                self._next_ability["next_ability"]
-            )
-            ability_response = await ability(**self._next_ability["ability_arguments"])
-            await self._update_tasks_and_memory(ability_response)
-            if self._current_task.context.status == TaskStatus.DONE:
-                self._completed_tasks.append(self._current_task)
-            else:
-                self._task_queue.append(self._current_task)
-            self._current_task = None
-            self._next_ability = None
-
-            return ability_response.dict()
-        else:
+        if user_input != "y":
             raise NotImplementedError
+        ability = self._ability_registry.get_ability(
+            self._next_ability["next_ability"]
+        )
+        ability_response = await ability(**self._next_ability["ability_arguments"])
+        await self._update_tasks_and_memory(ability_response)
+        if self._current_task.context.status == TaskStatus.DONE:
+            self._completed_tasks.append(self._current_task)
+        else:
+            self._task_queue.append(self._current_task)
+        self._current_task = None
+        self._next_ability = None
+
+        return ability_response.dict()
 
     async def _evaluate_task_and_add_context(self, task: Task) -> Task:
         """Evaluate the task and add context to it."""
-        if task.context.status == TaskStatus.IN_PROGRESS:
-            # Nothing to do here
-            return task
-        else:
+        if task.context.status != TaskStatus.IN_PROGRESS:
             self._logger.debug(f"Evaluating task {task} and adding relevant context.")
             # TODO: Look up relevant memories (need working memory system)
             # TODO: Eval whether there is enough information to start the task (w/ LLM).
             task.context.enough_info = True
             task.context.status = TaskStatus.IN_PROGRESS
-            return task
+        # Nothing to do here
+        return task
 
     async def _choose_next_ability(
         self,
@@ -258,10 +254,7 @@ class SimpleAgent(Agent, Configurable):
             #  with an appropriate reason
             raise NotImplementedError
         else:
-            next_ability = await self._planning.determine_next_ability(
-                task, ability_specs
-            )
-            return next_ability
+            return await self._planning.determine_next_ability(task, ability_specs)
 
     async def _update_tasks_and_memory(self, ability_result: AbilityResult):
         self._current_task.context.cycle_count += 1
@@ -371,13 +364,12 @@ class SimpleAgent(Agent, Configurable):
 
         system_settings = getattr(agent_settings, system_name)
         system_class = SimplePluginService.get_plugin(system_locations[system_name])
-        system_instance = system_class(
+        return system_class(
             system_settings,
             *args,
             logger=logger.getChild(system_name),
             **kwargs,
         )
-        return system_instance
 
 
 def _prune_empty_dicts(d: dict) -> dict:
@@ -394,10 +386,7 @@ def _prune_empty_dicts(d: dict) -> dict:
     pruned = {}
     for key, value in d.items():
         if isinstance(value, dict):
-            pruned_value = _prune_empty_dicts(value)
-            if (
-                pruned_value
-            ):  # if the pruned dictionary is not empty, add it to the result
+            if pruned_value := _prune_empty_dicts(value):
                 pruned[key] = pruned_value
         else:
             pruned[key] = value

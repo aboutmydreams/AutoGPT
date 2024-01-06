@@ -93,9 +93,6 @@ def start():
     is_flag=True,
     help="Write log output to a file instead of the terminal.",
 )
-# @click.argument(
-#     "agent_path", type=click.Path(exists=True, file_okay=False), required=False
-# )
 def run(
     maintain: bool,
     improve: bool,
@@ -135,10 +132,10 @@ def run(
         logger.error("Error: " + "\n".join(e.args))
         sys.exit(1)
 
-    original_stdout = sys.stdout  # Save the original standard output
     exit_code = None
 
     if backend:
+        original_stdout = sys.stdout  # Save the original standard output
         with open("backend/backend_stdout.txt", "w") as f:
             sys.stdout = f
             exit_code = run_benchmark(

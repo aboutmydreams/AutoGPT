@@ -76,16 +76,15 @@ async def get_embedding(
                 embedding_parser=lambda e: e,
             )
         ).embedding
-    else:
-        embeddings = []
-        for text in input:
-            result = await embedding_provider.create_embedding(
-                text=text,
-                model_name=model,
-                embedding_parser=lambda e: e,
-            )
-            embeddings.append(result.embedding)
-        return embeddings
+    embeddings = []
+    for text in input:
+        result = await embedding_provider.create_embedding(
+            text=text,
+            model_name=model,
+            embedding_parser=lambda e: e,
+        )
+        embeddings.append(result.embedding)
+    return embeddings
 
 
 def _get_embedding_with_plugin(text: str, config: Config) -> Embedding:

@@ -32,7 +32,7 @@ def test_set_continuous_mode(config: Config) -> None:
     continuous_mode = config.continuous_mode
 
     config.continuous_mode = True
-    assert config.continuous_mode is True
+    assert config.continuous_mode
 
     # Reset continuous mode
     config.continuous_mode = continuous_mode
@@ -46,7 +46,7 @@ def test_set_speak_mode(config: Config) -> None:
     speak_mode = config.tts_config.speak_mode
 
     config.tts_config.speak_mode = True
-    assert config.tts_config.speak_mode is True
+    assert config.tts_config.speak_mode
 
     # Reset speak mode
     config.tts_config.speak_mode = speak_mode

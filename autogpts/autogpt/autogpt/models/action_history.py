@@ -72,10 +72,7 @@ class ActionInterruptedByHuman(BaseModel):
     status: Literal["interrupted_by_human"] = "interrupted_by_human"
 
     def __str__(self) -> str:
-        return (
-            'The user interrupted the action with the following feedback: "%s"'
-            % self.feedback
-        )
+        return f'The user interrupted the action with the following feedback: "{self.feedback}"'
 
 
 ActionResult = ActionSuccessResult | ActionErrorResult | ActionInterruptedByHuman
@@ -99,9 +96,7 @@ class EpisodicActionHistory(BaseModel):
 
     @property
     def current_episode(self) -> Episode | None:
-        if self.cursor == len(self):
-            return None
-        return self[self.cursor]
+        return None if self.cursor == len(self) else self[self.cursor]
 
     def __getitem__(self, key: int) -> Episode:
         return self.episodes[key]

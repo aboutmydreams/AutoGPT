@@ -26,11 +26,10 @@ class FileWorkspaceMixin:
         # Initialize other bases first, because we need the config from BaseAgent
         super(FileWorkspaceMixin, self).__init__(**kwargs)
 
-        file_manager: AgentFileManager = getattr(self, "file_manager")
-        if not file_manager:
+        if file_manager := getattr(self, "file_manager"):
+            self._setup_workspace()
+        else:
             return
-
-        self._setup_workspace()
 
     def attach_fs(self, agent_dir: Path):
         res = super(FileWorkspaceMixin, self).attach_fs(agent_dir)
@@ -59,7 +58,4 @@ class FileWorkspaceMixin:
 
 
 def get_agent_workspace(agent: BaseAgent) -> FileWorkspace | None:
-    if isinstance(agent, FileWorkspaceMixin):
-        return agent.workspace
-
-    return None
+    return agent.workspace if isinstance(agent, FileWorkspaceMixin) else None
